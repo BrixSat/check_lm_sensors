@@ -342,8 +342,9 @@ sub parse_drives {
 
             while (<$output>) {
                 chomp;
-
-                if ( $_ =~ /^[0-9]+$/mx ) {
+		
+		# If we have a temperature of if drive is sleeping
+                if ( $_ =~ /^[0-9]+$/mx  ||  $_ =~ m/sleeping/ ) {
 
                     if ($sanitize) {
                         $name = $name . 'Temp';
@@ -357,7 +358,16 @@ sub parse_drives {
                         $name = $rename{$name};
                     }
 
-                    $sensor_values{$name} = $_;
+                    # If drive is sleeping set temp to 1 (dont know if it is the best but works)
+                    if ( $_ =~ m/sleeping/ ) 
+		    {
+			verbose "warning /dev/$name is sleeping: $_\n";
+                    	$sensor_values{$name} = 1;
+		    }
+		    else
+		    {
+                    	$sensor_values{$name} = $_;
+		    }
 
                     if ( $verbosity || $list ) {
                         print
